@@ -20,13 +20,13 @@ impl Lexer {
         return l;
     }
     pub fn next_token(&mut self) -> token::Token {
-        let mut tok: token::Token;
-        /*
-                let mut tok: token::Token = token::Token {
-                    t_type: token::TokenType::ILLEGAL,
-                    literal: "\0".to_string(),
-                };
-        */
+        let mut tok: token::Token = token::Token {
+            t_type: token::TokenType::ILLEGAL,
+            literal: self.ch.to_string(),
+        };
+
+        self.skip_whitespace();
+
         match self.ch {
             '=' => {
                 tok = token::Token {
@@ -84,21 +84,25 @@ impl Lexer {
             }
             _ => {
                 if Lexer::is_letter(self.ch) {
-                    tok = token::Token {
-                        t_type: token::TokenType::IDENT,
-                        literal: self.read_identifier(),
-                    };
+                    let ident: String = self.read_identifier();
+                    tok.literal = ident.clone(); // TODO: Maybe fix this performance hit
+                    tok.t_type = token::lookup_ident(ident);
                     return tok;
-                } else {
-                    tok = token::Token {
-                        t_type: token::TokenType::ILLEGAL,
-                        literal: self.ch.to_string(),
-                    };
+                } else if Lexer::is_digit(self.ch) {
+                    tok.t_type = token::TokenType::INT;
+                    tok.literal = self.read_number();
+                    return tok;
                 }
             }
         }
         self.read_char();
         return tok;
+    }
+
+    fn skip_whitespace(&mut self) {
+        while self.ch == ' ' || self.ch == '\t' || self.ch == '\n' || self.ch == '\r' {
+            self.read_char();
+        }
     }
 
     fn read_char(&mut self) {
@@ -121,7 +125,19 @@ impl Lexer {
         return self.input[pos..self.position].to_string();
     }
 
+    fn read_number(&mut self) -> String {
+        let pos = self.position;
+        while Lexer::is_digit(self.ch) {
+            self.read_char();
+        }
+        return self.input[pos..self.position].to_string();
+    }
+
     fn is_letter(c: char) -> bool {
         return 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || c == '_';
+    }
+
+    fn is_digit(c: char) -> bool {
+        return '0' <= c && c <= '9';
     }
 }

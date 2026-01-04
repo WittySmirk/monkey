@@ -150,7 +150,7 @@ fn test_next_token() {
             literal: String::from("ten"),
         },
         token::Token {
-            t_type: token::TokenType::LPARAN,
+            t_type: token::TokenType::RPARAN,
             literal: String::from(")"),
         },
         token::Token {
@@ -164,7 +164,7 @@ fn test_next_token() {
     for t in checks {
         let curr = l.next_token();
 
-        // Todo: document this better
+        // TODO: document this better
         assert_eq!(curr.t_type, t.t_type);
         assert_eq!(curr.literal, t.literal);
     }

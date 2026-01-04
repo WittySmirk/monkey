@@ -29,3 +29,13 @@ pub struct Token {
     pub t_type: TokenType,
     pub literal: String,
 }
+const known: [(&str, TokenType); 2] = [("fn", TokenType::FUNCTION), ("let", TokenType::LET)];
+
+pub fn lookup_ident(ident: String) -> TokenType {
+    for k in known {
+        if k.0 == ident {
+            return k.1;
+        }
+    }
+    return TokenType::IDENT;
+}
