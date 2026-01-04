@@ -20,10 +20,13 @@ impl Lexer {
         return l;
     }
     pub fn next_token(&mut self) -> token::Token {
-        let mut tok: token::Token = token::Token {
-            t_type: token::TokenType::ILLEGAL,
-            literal: "\0".to_string(),
-        };
+        let mut tok: token::Token;
+        /*
+                let mut tok: token::Token = token::Token {
+                    t_type: token::TokenType::ILLEGAL,
+                    literal: "\0".to_string(),
+                };
+        */
         match self.ch {
             '=' => {
                 tok = token::Token {
@@ -79,7 +82,20 @@ impl Lexer {
                     literal: self.ch.to_string(),
                 }
             }
-            _ => {}
+            _ => {
+                if Lexer::is_letter(self.ch) {
+                    tok = token::Token {
+                        t_type: token::TokenType::IDENT,
+                        literal: self.read_identifier(),
+                    };
+                    return tok;
+                } else {
+                    tok = token::Token {
+                        t_type: token::TokenType::ILLEGAL,
+                        literal: self.ch.to_string(),
+                    };
+                }
+            }
         }
         self.read_char();
         return tok;
@@ -94,5 +110,18 @@ impl Lexer {
 
         self.position = self.read_position;
         self.read_position += 1;
+    }
+
+    fn read_identifier(&mut self) -> String {
+        let pos = self.position;
+
+        while Lexer::is_letter(self.ch) {
+            self.read_char();
+        }
+        return self.input[pos..self.position].to_string();
+    }
+
+    fn is_letter(c: char) -> bool {
+        return 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || c == '_';
     }
 }
