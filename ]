@@ -1,0 +1,53 @@
+use crate::token;
+
+pub struct Lexer {
+    input: &'static str,
+    position: usize,
+    read_position: usize,
+    ch: char,
+}
+
+impl Lexer {
+    pub fn new(input: &'static str) -> Self {
+        // Default values
+        let mut l = Self {
+            input,
+            position: 0,
+            read_position: 0,
+            ch: '\0',
+        };
+        l.read_char();
+        return l;
+    }
+    pub fn next_token(&mut self) -> token::Token {
+        let mut tok: token::Token = Token {
+            t_type: token::TokenType::ILLEGAL,
+            literal: "\0",
+        };
+        match self.ch {
+            '=' => tok = token::TokenType::ASSIGN,
+            ';' => tok = token::TokenType::SEMICOLON,
+            '(' => tok = token::TokenType::LPARAN,
+            ')' => tok = token::TokenType::RPARAN,
+            '{' => tok = token::TokenType::LBRACE,
+            '}' => tok = token::TokenType::RBRACE,
+            '+' => tok = token::TokenType::PLUS,
+            ',' => tok = token::TokenType::COMMA,
+            '\0' => tok = token::TokenType::EOF,
+            _ => {}
+        }
+        self.read_char();
+        return tok;
+    }
+
+    fn read_char(&mut self) {
+        if self.read_position >= self.input.len() {
+            self.ch = '\0';
+        } else {
+            self.ch = self.input.chars().nth(self.read_position).unwrap();
+        }
+
+        self.position = self.read_position;
+        self.read_position += 1;
+    }
+}
