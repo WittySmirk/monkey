@@ -29,9 +29,18 @@ impl Lexer {
 
         match self.ch {
             '=' => {
-                tok = token::Token {
-                    t_type: token::TokenType::ASSIGN,
-                    literal: self.ch.to_string(),
+                if self.peek_char() == '=' {
+                    let ch = self.ch;
+                    self.read_char();
+                    tok = token::Token {
+                        t_type: token::TokenType::EQ,
+                        literal: ch.to_string() + self.ch.to_string().as_str(),
+                    }
+                } else {
+                    tok = token::Token {
+                        t_type: token::TokenType::ASSIGN,
+                        literal: self.ch.to_string(),
+                    }
                 }
             }
             ';' => {
@@ -67,6 +76,51 @@ impl Lexer {
             '+' => {
                 tok = token::Token {
                     t_type: token::TokenType::PLUS,
+                    literal: self.ch.to_string(),
+                }
+            }
+            '-' => {
+                tok = token::Token {
+                    t_type: token::TokenType::MINUS,
+                    literal: self.ch.to_string(),
+                }
+            }
+            '!' => {
+                if self.peek_char() == '=' {
+                    let ch = self.ch;
+                    self.read_char();
+                    tok = token::Token {
+                        t_type: token::TokenType::NE,
+                        literal: ch.to_string() + self.ch.to_string().as_str(),
+                    }
+                } else {
+                    tok = token::Token {
+                        t_type: token::TokenType::BANG,
+                        literal: self.ch.to_string(),
+                    }
+                }
+            }
+            '*' => {
+                tok = token::Token {
+                    t_type: token::TokenType::ASTERISK,
+                    literal: self.ch.to_string(),
+                }
+            }
+            '/' => {
+                tok = token::Token {
+                    t_type: token::TokenType::SLASH,
+                    literal: self.ch.to_string(),
+                }
+            }
+            '<' => {
+                tok = token::Token {
+                    t_type: token::TokenType::LT,
+                    literal: self.ch.to_string(),
+                }
+            }
+            '>' => {
+                tok = token::Token {
+                    t_type: token::TokenType::GT,
                     literal: self.ch.to_string(),
                 }
             }
@@ -139,5 +193,13 @@ impl Lexer {
 
     fn is_digit(c: char) -> bool {
         return '0' <= c && c <= '9';
+    }
+
+    fn peek_char(&mut self) -> char {
+        if self.position >= self.input.len() {
+            return '\0';
+        }
+
+        return self.input.chars().nth(self.read_position).unwrap();
     }
 }

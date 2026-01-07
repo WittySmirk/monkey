@@ -10,6 +10,14 @@ pub enum TokenType {
     //Operators
     ASSIGN,
     PLUS,
+    MINUS,
+    BANG,
+    ASTERISK,
+    SLASH,
+    LT,
+    GT,
+    EQ,
+    NE,
 
     //Delimeters
     COMMA,
@@ -23,16 +31,30 @@ pub enum TokenType {
     //Keywords
     FUNCTION,
     LET,
+    TRUE,
+    FALSE,
+    IF,
+    ELSE,
+    RETURN,
 }
 
 pub struct Token {
     pub t_type: TokenType,
     pub literal: String,
 }
-const known: [(&str, TokenType); 2] = [("fn", TokenType::FUNCTION), ("let", TokenType::LET)];
+
+const KNOWN: [(&str, TokenType); 7] = [
+    ("fn", TokenType::FUNCTION),
+    ("let", TokenType::LET),
+    ("true", TokenType::TRUE),
+    ("false", TokenType::FALSE),
+    ("if", TokenType::IF),
+    ("else", TokenType::ELSE),
+    ("return", TokenType::RETURN),
+];
 
 pub fn lookup_ident(ident: String) -> TokenType {
-    for k in known {
+    for k in KNOWN {
         if k.0 == ident {
             return k.1;
         }
