@@ -1,8 +1,22 @@
-use std::mem;
+use std::collections::HashMap;
 
 use crate::ast;
 use crate::lexer;
 use crate::token;
+
+type prefix_parse_fn<T> = fn(T) -> ast::Expression;
+type infix_parse_fn<T> = fn(T, left: ast::Expression) -> ast::Expression;
+
+enum Precedince {
+    BLANK = 0,
+    LOWEST,
+    EQUALS,      // =
+    LESSGREATER, // < or >
+    SUM,         // +
+    PRODUCT,     // *
+    PREFIX,      // -X or !X
+    CALL,        // x()
+}
 
 pub struct Parser {
     lexer: lexer::Lexer,
@@ -15,6 +29,7 @@ impl Parser {
     pub fn new(mut lexer: lexer::Lexer) -> Self {
         let c: token::Token = lexer.next_token();
         let p: token::Token = lexer.next_token();
+
         Self {
             lexer,
             curr_token: c,
@@ -54,7 +69,11 @@ impl Parser {
             token::TokenType::RETURN => {
                 return Some(ast::Statement::Return(self.parse_return_statement()?))
             }
-            _ => return None,
+            _ => {
+                return Some(ast::Statement::Expression(
+                    self.parse_expression_statement()?,
+                ))
+            }
         }
     }
 
@@ -69,13 +88,7 @@ impl Parser {
                 },
                 value: String::from("\0"),
             },
-            value: ast::Expression::Identifier(ast::Identifier {
-                token: token::Token {
-                    t_type: token::TokenType::IDENT,
-                    literal: String::from("\0"),
-                },
-                value: String::from("\0"),
-            }),
+            value: None,
         };
 
         if !self.expect_peek(token::TokenType::IDENT) {
@@ -108,10 +121,10 @@ impl Parser {
         true
     }
 
-    fn peek_error(&mut self, token_type: token::TokenType) {
+    fn peek_error(&mut self, t_type: token::TokenType) {
         let err = format!(
             "parser error: expected peek type to be {} but was {}",
-            token_type, self.peek_token.t_type
+            t_type, self.peek_token.t_type
         );
 
         self.errors.push(err);
@@ -119,16 +132,41 @@ impl Parser {
     fn parse_return_statement(&mut self) -> Option<ast::ReturnStatement> {
         let statement: ast::ReturnStatement = ast::ReturnStatement {
             token: self.curr_token.clone(),
-            expression: ast::Expression::Identifier(ast::Identifier {
-                token: token::Token {
-                    t_type: token::TokenType::IDENT,
-                    literal: String::from("\0"),
-                },
-                value: String::from("\0"),
-            }),
+            return_value: None,
         };
 
-        self.next_token();
+        while self.curr_token.t_type != token::TokenType::SEMICOLON {
+            self.next_token();
+        }
         Some(statement)
+    }
+
+    fn parse_expression_statement(&mut self) -> Option<ast::ExpressionStatement> {
+        let mut statement: ast::ExpressionStatement = ast::ExpressionStatement {
+            token: self.curr_token.clone(),
+            expression: None,
+        };
+
+        statement.expression = self.parse_expression(Precedince::LOWEST);
+
+        if self.peek_token.t_type == token::TokenType::SEMICOLON {
+            self.next_token();
+        }
+
+        Some(statement)
+    }
+
+    fn parse_expression(&mut self, precidence: Precedince) -> Option<ast::Expression> {
+        match self.curr_token.t_type {
+            token::TokenType::IDENT => return Some(self.parse_identifier()),
+            _ => return None,
+        }
+    }
+
+    fn parse_identifier(&mut self) -> ast::Expression {
+        ast::Expression::Identifier(ast::Identifier {
+            token: self.curr_token.clone(),
+            value: self.curr_token.literal.clone(),
+        })
     }
 }

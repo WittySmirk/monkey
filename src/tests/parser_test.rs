@@ -60,8 +60,8 @@ fn check_parser_errors(parser: &parser::Parser) {
 fn test_return_statements() {
     let input = "
         return 5;
-        return 10;
-        return 838383;
+        return 8;
+        return 91230;
     ";
     let lexer: lexer::Lexer = lexer::Lexer::new(String::from(input));
     let mut parser: parser::Parser = parser::Parser::new(lexer);
@@ -79,12 +79,43 @@ fn test_return_statements() {
                 assert!(false, "Expected RETURN statement got {} statement", s);
             }
         }
-        if statement.token_literal() != String::from("return") {
+        if statement.token_literal() != "return" {
             assert!(
                 false,
                 "Expected return literal got {} literal",
                 statement.token_literal()
             );
         }
+    }
+}
+
+#[test]
+fn test_ident_expression() {
+    let input = "foobar;";
+    let lexer: lexer::Lexer = lexer::Lexer::new(String::from(input));
+    let mut parser: parser::Parser = parser::Parser::new(lexer);
+
+    let program: ast::Program = parser.parse_program().expect("failed to parse program");
+
+    check_parser_errors(&parser);
+
+    if program.statements.len() != 1 {
+        assert!(false, "program does not have enough statements");
+    }
+
+    match &program.statements[0] {
+        ast::Statement::Expression(s) => match s.expression.as_ref().unwrap() {
+            ast::Expression::Identifier(e) => {
+                if e.value != "foobar" {
+                    assert!(false, "identifier not foobar, got {}", e.value);
+                }
+                if e.token_literal() != "foobar" {
+                    assert!(false, "literal not foobar, got {}", e.token_literal());
+                }
+            }
+
+            e => assert!(false, "expression not an identifier, got {}", e),
+        },
+        s => assert!(false, "not an expression statement, got {}", s),
     }
 }
