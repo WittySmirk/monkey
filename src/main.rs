@@ -1,7 +1,9 @@
 #[cfg(test)]
 mod tests;
 
+mod ast;
 mod lexer;
+mod parser;
 mod repl;
 mod token;
 
