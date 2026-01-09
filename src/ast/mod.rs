@@ -8,6 +8,19 @@ pub trait Node {
 
 pub enum Statement {
     Let(LetStatement),
+    Return(ReturnStatement),
+}
+
+impl std::fmt::Display for Statement {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut te: &str = "";
+        match self {
+            Statement::Let(_) => te = "LET",
+            Statement::Return(_) => te = "RETURN",
+        }
+
+        write!(f, "{}", te)
+    }
 }
 
 pub enum Expression {
@@ -18,6 +31,7 @@ impl Node for Statement {
     fn token_literal(&self) -> String {
         match self {
             Statement::Let(s) => s.token_literal(),
+            Statement::Return(s) => s.token_literal(),
         }
     }
 }
@@ -61,6 +75,17 @@ pub struct LetStatement {
 }
 
 impl Node for LetStatement {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+}
+
+pub struct ReturnStatement {
+    pub token: token::Token,
+    pub expression: Expression,
+}
+
+impl Node for ReturnStatement {
     fn token_literal(&self) -> String {
         self.token.literal.clone()
     }
