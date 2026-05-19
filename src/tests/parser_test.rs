@@ -119,3 +119,34 @@ fn test_ident_expression() {
         s => assert!(false, "not an expression statement, got {}", s),
     }
 }
+
+#[test]
+fn test_integer_literal_expression() {
+    let input = "5;";
+    let lexer: lexer::Lexer = lexer::Lexer::new(String::from(input));
+    let mut parser: parser::Parser = parser::Parser::new(lexer);
+
+    let program: ast::Program = parser.parse_program().expect("failed to parse program");
+
+    check_parser_errors(&parser);
+
+    if program.statements.len() != 1 {
+        assert!(false, "program does not have enough statements");
+    }
+
+    match &program.statements[0] {
+        ast::Statement::Expression(s) => match s.expression.as_ref().unwrap() {
+            ast::Expression::IntegerLiteral(i) => {
+                if i.value != 5 {
+                    assert!(false, "integer literal not 5 got {}", i.value);
+                }
+                if i.token_literal() != "5" {
+                    assert!(false, "literal not 5, got {}", i.token_literal());
+                }
+            }
+
+            e => assert!(false, "expression not an integer literal, got {}", e),
+        },
+        s => assert!(false, "not an expression statement, got {}", s),
+    }
+}

@@ -26,6 +26,7 @@ impl std::fmt::Display for Statement {
 
 pub enum Expression {
     Identifier(Identifier),
+    IntegerLiteral(IntegerLiteral),
 }
 
 impl std::fmt::Display for Expression {
@@ -33,6 +34,7 @@ impl std::fmt::Display for Expression {
         let mut te: &str = "";
         match self {
             Expression::Identifier(_) => te = "IDENTIFIER",
+            Expression::IntegerLiteral(_) => te = "INTEGER_LITERAL",
         }
 
         write!(f, "{}", te)
@@ -60,11 +62,13 @@ impl Node for Expression {
     fn token_literal(&self) -> String {
         match self {
             Expression::Identifier(i) => i.token_literal(),
+            Expression::IntegerLiteral(i) => i.token_literal(),
         }
     }
     fn string(&self) -> String {
         match self {
             Expression::Identifier(i) => i.string(),
+            Expression::IntegerLiteral(i) => i.string(),
         }
     }
 }
@@ -170,5 +174,19 @@ impl Node for ExpressionStatement {
             return String::from(self.expression.as_ref().unwrap().string().as_str());
         }
         return String::from("");
+    }
+}
+
+pub struct IntegerLiteral {
+    pub token: token::Token,
+    pub value: i64,
+}
+
+impl Node for IntegerLiteral {
+    fn token_literal(&self) -> String {
+        self.token.literal.clone()
+    }
+    fn string(&self) -> String {
+        self.token.literal.clone()
     }
 }

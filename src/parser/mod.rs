@@ -1,11 +1,9 @@
-use std::collections::HashMap;
-
 use crate::ast;
 use crate::lexer;
 use crate::token;
 
-type prefix_parse_fn<T> = fn(T) -> ast::Expression;
-type infix_parse_fn<T> = fn(T, left: ast::Expression) -> ast::Expression;
+type PrefixParseFn<T> = fn(T) -> ast::Expression;
+type InfixParseFn<T> = fn(T, left: ast::Expression) -> ast::Expression;
 
 enum Precedince {
     BLANK = 0,
@@ -159,6 +157,7 @@ impl Parser {
     fn parse_expression(&mut self, precidence: Precedince) -> Option<ast::Expression> {
         match self.curr_token.t_type {
             token::TokenType::IDENT => return Some(self.parse_identifier()),
+            token::TokenType::INT => return Some(self.parse_integerliteral()),
             _ => return None,
         }
     }
@@ -167,6 +166,13 @@ impl Parser {
         ast::Expression::Identifier(ast::Identifier {
             token: self.curr_token.clone(),
             value: self.curr_token.literal.clone(),
+        })
+    }
+
+    fn parse_integerliteral(&mut self) -> ast::Expression {
+        ast::Expression::IntegerLiteral(ast::IntegerLiteral {
+            token: self.curr_token.clone(),
+            value: self.curr_token.literal.parse().unwrap(),
         })
     }
 }
